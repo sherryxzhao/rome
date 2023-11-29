@@ -50,6 +50,7 @@ def get_scores(ds_name):
     elif ds_name == "ZSREeval":
         ds = MENDQADataset(DATA_DIR, mt.tokenizer)
 
+    print("Computing Noise Level...")
     noise_level = 3 * collect_embedding_std(mt, [k["requested_rewrite"]["subject"] for k in ds])
     print(f"Using noise level {noise_level}")
 
@@ -57,22 +58,24 @@ def get_scores(ds_name):
 
     # for each entry in the dataset
     for dp in ds[:]:
-        subject = dp["requested_rewrite"]["subject"]
-        prompt = dp["requested_rewrite"]["prompt"].replace("{}", subject)
-        kind = 'mlp'
-        noise = noise_level
-        samples = 10
-        window = 10
-        result = calculate_hidden_flow(
-            mt, prompt, subject, samples=samples, noise=noise, window=window, kind=kind
-        )
-        scores = result['scores'].cpu().numpy()
-        dp["requested_rewrite"]['max_edit_layer'] = int(numpy.argmax(scores[result['subject_range'][1]]))
-        # join two dictionary and
-        json_str = json.dumps(dp)
-        f.write(json_str+'\n')
+        try:
+            subject = dp["requested_rewrite"]["subject"]
+            prompt = dp["requested_rewrite"]["prompt"].replace("{}", subject)
+            kind = 'mlp'
+            noise = noise_level
+            samples = 10
+            window = 10
+            result = calculate_hidden_flow(
+                mt, prompt, subject, samples=samples, noise=noise, window=window, kind=kind
+            )
+            scores = result['scores'].cpu().numpy()
+            dp["requested_rewrite"]['max_edit_layer'] = int(numpy.argmax(scores[result['subject_range'][1]]))
+            # join two dictionary and add to json file
+            json_str = json.dumps(dp)
+            f.write(json_str+'\n')
+        except:
+            print("Error processing case_id " +  dp["case_id"])
     f.close()
 
 # %%
-get_scores("counterfact")
 get_scores("ZSREeval")
