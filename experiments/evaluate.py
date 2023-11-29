@@ -8,10 +8,10 @@ from typing import Tuple, Union
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from baselines.efk import EFKHyperParams, EfkRewriteExecutor
-from baselines.ft import FTHyperParams, apply_ft_to_model
-from baselines.kn import KNHyperParams, apply_kn_to_model
-from baselines.mend import MENDHyperParams, MendRewriteExecutor
+# from baselines.efk import EFKHyperParams, EfkRewriteExecutor
+# from baselines.ft import FTHyperParams, apply_ft_to_model
+# from baselines.kn import KNHyperParams, apply_kn_to_model
+# from baselines.mend import MENDHyperParams, MendRewriteExecutor
 from dsets import (
     AttributeSnippets,
     CounterFactDataset,
@@ -26,10 +26,10 @@ from util.globals import *
 
 ALG_DICT = {
     "ROME": (ROMEHyperParams, apply_rome_to_model),
-    "FT": (FTHyperParams, apply_ft_to_model),
-    "KN": (KNHyperParams, apply_kn_to_model),
-    "MEND": (MENDHyperParams, MendRewriteExecutor().apply_to_model),
-    "KE": (EFKHyperParams, EfkRewriteExecutor().apply_to_model),
+    # "FT": (FTHyperParams, apply_ft_to_model),
+    # "KN": (KNHyperParams, apply_kn_to_model),
+    # "MEND": (MENDHyperParams, MendRewriteExecutor().apply_to_model),
+    # "KE": (EFKHyperParams, EfkRewriteExecutor().apply_to_model),
 }
 
 DS_DICT = {
@@ -51,7 +51,7 @@ def main(
 ):
     # Set algorithm-specific variables
     params_class, apply_algo = ALG_DICT[alg_name]
-
+    print("enter main")
     # Determine run directory
     if continue_from_run is not None:
         run_dir = RESULTS_DIR / dir_name / continue_from_run
@@ -94,6 +94,7 @@ def main(
         model, tok = model_name
 
     # Load data
+    print("DATA_DIR", DATA_DIR)
     print("Loading dataset, attribute snippets, tf-idf data")
     snips = AttributeSnippets(DATA_DIR) if not skip_generation_tests else None
     vec = get_tfidf_vectorizer(DATA_DIR) if not skip_generation_tests else None
@@ -116,7 +117,7 @@ def main(
             edited_model, weights_copy = apply_algo(
                 model,
                 tok,
-                [record["requested_rewrite"]],
+                [record["requested_rewrite"]], # TODO: modify here to pass requests with max layer
                 hparams,
                 copy=False,
                 return_orig_weights=True,
@@ -129,15 +130,15 @@ def main(
             start = time()
             metrics = {
                 "case_id": case_id,
-                "requested_rewrite": record["requested_rewrite"],
+                "requested_rewrite": record["requested_rewrite"], # TODO: what is that 
                 "time": exec_time,
-                "post": ds_eval_method(edited_model, tok, record, snips, vec),
+                "post": ds_eval_method(edited_model, tok, record, snips, vec), # TODO: edit record
             }
 
             with torch.no_grad():
                 for k, v in weights_copy.items():
                     nethook.get_parameter(model, k)[...] = v.to("cuda")
-            metrics["pre"] = ds_eval_method(model, tok, record, snips, vec)
+            metrics["pre"] = ds_eval_method(model, tok, record, snips, vec) # edit record
 
             print("Evaluation took", time() - start)
 
