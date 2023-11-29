@@ -37,6 +37,9 @@ DS_DICT = {
     "zsre": (MENDQADataset, compute_rewrite_quality_zsre),
 }
 
+# add for bug fixes
+import nltk
+nltk.download('punkt')
 
 def main(
     alg_name: str,
