@@ -9,8 +9,10 @@
 1. Get CUDA_DIR: request the GPU you need and contain the code `echo $CUDA_HOME` in the shell code. Submit it and see the output for CUDA directory. (I use V100, the directory is: `/usr/local/pace-apps/spack/packages/linux-rhel7-x86_64/gcc-4.8.5/cuda-11.6.0-u4jzhgn5buvcnkwuqrep25mluzkhzi3j`)
 2. Substitute this path in the **scripts/setup_conda.sh** CUDA_DIR variable
 
-## Third Step: Modify **scripts/rome.yml** and **experiments/evaluate.py**
-Just use the updated version of these two files
+## Third Step: Modify **scripts/rome.yml** and **experiments/evaluate.py**, Create Conda environment
+Just use the updated version of these two files and run `./scripts/setup_conda.sh`
+
+After the conda environment is setup, activate the environment `conda activate rome` and run `pip install allennlp`
 
 ## Last Step: The batch submission script
 
