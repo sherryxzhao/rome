@@ -10,7 +10,6 @@ dependencies:
   - pip:
     - aiohttp==3.8.1
     - aiosignal==1.2.0
-    - allennlp==2.9.0
     - antlr4-python3-runtime==4.8
     - argon2-cffi==21.3.0
     - argon2-cffi-bindings==21.2.0
@@ -32,7 +31,6 @@ dependencies:
     - cffi==1.15.0
     - chardet==4.0.0
     - charset-normalizer==2.0.11
-    - checklist==0.0.11
     - cheroot==8.6.0
     - cherrypy==18.6.1
     - click==8.0.3

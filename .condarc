@@ -1,0 +1,4 @@
+envs_dirs:
+  - /home/hice1/yyan376/scratch/envs
+pkgs_dirs:
+  - /home/hice1/yyan376/scratch/pkgs
