@@ -52,7 +52,7 @@ def get_scores(ds_name):
     else:
         ds = KnownsDataset(DATA_DIR)
 
-    noise_level = 3 * collect_embedding_std(mt, [k["subject"] for k in ds])
+    noise_level = 3 * collect_embedding_std(mt, [k["requested_rewrite"]["subject"] for k in ds])
     print(f"Using noise level {noise_level}")
 
     f = open('./../visualization/' + ds_name + '_return_mlp.json', "a+")
@@ -69,7 +69,7 @@ def get_scores(ds_name):
             mt, prompt, subject, samples=samples, noise=noise, window=window, kind=kind
         )
         scores = result['scores'].cpu().numpy()
-        dp['max_edit_layer'] = numpy.argmax(scores[result['subject_range'][1]])
+        dp["requested_rewrite"]['max_edit_layer'] = numpy.argmax(scores[result['subject_range'][1]])
         # join two dictionary and
         json_str = json.dumps(dp)
         f.write(json_str+'\n')
