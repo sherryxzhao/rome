@@ -48,19 +48,17 @@ def get_scores(ds_name):
     if ds_name == "counterfact":
         ds = CounterFactDataset(DATA_DIR)
     elif ds_name == "ZSREeval":
-        ds = MENDQADataset(DATA_DIR)
-    else:
-        ds = KnownsDataset(DATA_DIR)
+        ds = MENDQADataset(DATA_DIR, mt.tokenizer)
 
     noise_level = 3 * collect_embedding_std(mt, [k["requested_rewrite"]["subject"] for k in ds])
     print(f"Using noise level {noise_level}")
 
-    f = open('./../visualization/' + ds_name + '_return_mlp.json', "a+")
+    f = open('./visualization/' + ds_name + '_return_mlp.json', "a+")
 
     # for each entry in the dataset
     for dp in ds[:]:
-        prompt = dp["prompt"]
-        subject = dp["subject"]
+        subject = dp["requested_rewrite"]["subject"]
+        prompt = dp["requested_rewrite"]["prompt"].replace("{}", subject)
         kind = 'mlp'
         noise = noise_level
         samples = 10
@@ -69,7 +67,7 @@ def get_scores(ds_name):
             mt, prompt, subject, samples=samples, noise=noise, window=window, kind=kind
         )
         scores = result['scores'].cpu().numpy()
-        dp["requested_rewrite"]['max_edit_layer'] = numpy.argmax(scores[result['subject_range'][1]])
+        dp["requested_rewrite"]['max_edit_layer'] = int(numpy.argmax(scores[result['subject_range'][1]]))
         # join two dictionary and
         json_str = json.dumps(dp)
         f.write(json_str+'\n')
