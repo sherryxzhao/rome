@@ -2,6 +2,7 @@
 #%%
 import os, re, json
 import torch, numpy
+import logging
 from collections import defaultdict
 from util import nethook
 from util.globals import DATA_DIR
@@ -73,8 +74,20 @@ def get_scores(ds_name):
             # join two dictionary and add to json file
             json_str = json.dumps(dp)
             f.write(json_str+'\n')
-        except:
+
+        except Exception as Argument:
             print("Error processing case_id " +  str(dp["case_id"]))
+
+            flog = open("./visualization/" + ds_name + "_log.txt", "a")
+        
+            flog.write("Error processing case_id " +  str(dp["case_id"]))
+            flog.write(str(Argument))
+            
+            flog.close()
+
+        finally:
+            if dp["case_id"] % 100 == 0:
+                print("Done Processing case_id " +  str(dp["case_id"]))
     f.close()
 
 # %%
