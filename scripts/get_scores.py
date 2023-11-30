@@ -70,7 +70,7 @@ def get_scores(ds_name):
                 mt, prompt, subject, samples=samples, noise=noise, window=window, kind=kind
             )
             scores = result['scores'].cpu().numpy()
-            dp["requested_rewrite"]['max_edit_layer'] = int(numpy.argmax(scores[result['subject_range'][1]]))
+            dp["requested_rewrite"]['max_edit_layer'] = int(numpy.argmax(scores[result['subject_range'][1] - 1]))
             # join two dictionary and add to json file
             json_str = json.dumps(dp)
             f.write(json_str+'\n')
