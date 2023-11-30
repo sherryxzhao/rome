@@ -20,4 +20,6 @@ Refer to helloexample.sbatch
 
 ## Notes
 
-Try running the code in Jupyter and estimate the total running time. For a 3hr test run last night, 821/1000 examples are finished. Thus in this version of helloexample.sbatch I changed the running time to 4hrs
+1. Try running the code in Jupyter and estimate the total running time. For a 3hr test run last night, 821/1000 examples are finished. Thus in this version of helloexample.sbatch I changed the running time to 4hrs
+
+2. How to use A100: Change the GPU specification in sbatch file into `#SBATCH -N1 --gres=gpu:1 -C A100-40GB`
