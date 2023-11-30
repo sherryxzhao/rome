@@ -74,7 +74,7 @@ def get_scores(ds_name):
             json_str = json.dumps(dp)
             f.write(json_str+'\n')
         except:
-            print("Error processing case_id " +  dp["case_id"])
+            print("Error processing case_id " +  str(dp["case_id"]))
     f.close()
 
 # %%
