@@ -149,6 +149,7 @@ def get_scores(ds_name="ZSREeval", start=0, num=0):
 
         finally:
             case_id = dp["case_id"]
+            if case_id == start: continue
             if (case_id - start) % log_freq == 0:
                 log = "Done Processing case_id " +  str(case_id)
                 print(log)
