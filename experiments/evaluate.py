@@ -49,6 +49,7 @@ def main(
     model_name: Union[str, Tuple],
     hparams_fname: str,
     ds_name: str,
+    is_edit_max: bool,
     dataset_size_limit: int,
     continue_from_run: str,
     skip_generation_tests: bool,
@@ -111,8 +112,6 @@ def main(
     with open(file_path, 'r') as file:
         ds = json.load(file)
     
-    # TODO: here to device whether to use edit_max or not (if requests contain `max_score_layer`)
-    IS_EDIT_MAX = True
 
     idx = 1 
     # Iterate through dataset
@@ -139,7 +138,7 @@ def main(
                 hparams,
                 copy=False,
                 return_orig_weights=True,
-                is_edit_max=IS_EDIT_MAX,
+                is_edit_max=is_edit_max,
                 **args_conserve_memory,
             )
             exec_time = time() - start
@@ -199,6 +198,14 @@ if __name__ == "__main__":
         help="Dataset to perform evaluations on. Either CounterFact (cf) or zsRE (zsre).",
     )
     parser.add_argument(
+        "--is_edit_max",
+        type=bool,
+        nargs='?',
+        const=True,
+        default=False,
+    help="Edit the max layers (in request) or not."
+    )
+    parser.add_argument(
         "--continue_from_run",
         type=str,
         default=None,
@@ -232,6 +239,7 @@ if __name__ == "__main__":
         args.model_name,
         args.hparams_fname,
         args.ds_name,
+        args.is_edit_max,
         args.dataset_size_limit,
         args.continue_from_run,
         args.skip_generation_tests,
