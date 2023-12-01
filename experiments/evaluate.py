@@ -7,6 +7,8 @@ from typing import Tuple, Union
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from tqdm import tqdm
+
 
 # from baselines.efk import EFKHyperParams, EfkRewriteExecutor
 # from baselines.ft import FTHyperParams, apply_ft_to_model
@@ -23,6 +25,7 @@ from experiments.py.eval_utils_zsre import compute_rewrite_quality_zsre
 from rome import ROMEHyperParams, apply_rome_to_model
 from util import nethook
 from util.globals import *
+import json
 
 ALG_DICT = {
     "ROME": (ROMEHyperParams, apply_rome_to_model),
@@ -54,7 +57,6 @@ def main(
 ):
     # Set algorithm-specific variables
     params_class, apply_algo = ALG_DICT[alg_name]
-    print("enter main")
     # Determine run directory
     if continue_from_run is not None:
         run_dir = RESULTS_DIR / dir_name / continue_from_run
@@ -97,17 +99,30 @@ def main(
         model, tok = model_name
 
     # Load data
-    print("DATA_DIR", DATA_DIR)
     print("Loading dataset, attribute snippets, tf-idf data")
     snips = AttributeSnippets(DATA_DIR) if not skip_generation_tests else None
     vec = get_tfidf_vectorizer(DATA_DIR) if not skip_generation_tests else None
 
     ds_class, ds_eval_method = DS_DICT[ds_name]
-    ds = ds_class(DATA_DIR, size=dataset_size_limit, tok=tok)
+    # ds = ds_class(DATA_DIR, size=dataset_size_limit, tok=tok)
 
+    # TODO: this is the place to change the data path
+    file_path = 'data/counterfact_max_layer_requests.json'
+    with open(file_path, 'r') as file:
+        ds = json.load(file)
+    
+    # TODO: here to device whether to use edit_max or not (if requests contain `max_score_layer`)
+    IS_EDIT_MAX = True
+
+    idx = 1 
     # Iterate through dataset
-    for record in ds:
-        case_id = record["case_id"]
+    for record in tqdm(ds, desc="Processing records"):
+        if 'case_id' not in record:
+            case_id = idx
+        else:
+            case_id = record["case_id"]
+        idx += 1
+        
         case_result_path = run_dir / f"case_{case_id}.json"
         if not case_result_path.exists():
             # Compute weight changes + record weights that changed
@@ -120,10 +135,11 @@ def main(
             edited_model, weights_copy = apply_algo(
                 model,
                 tok,
-                [record["requested_rewrite"]], # TODO: modify here to pass requests with max layer
+                [record["requested_rewrite"]],
                 hparams,
                 copy=False,
                 return_orig_weights=True,
+                is_edit_max=IS_EDIT_MAX,
                 **args_conserve_memory,
             )
             exec_time = time() - start
@@ -133,22 +149,21 @@ def main(
             start = time()
             metrics = {
                 "case_id": case_id,
-                "requested_rewrite": record["requested_rewrite"], # TODO: what is that 
+                "requested_rewrite": record["requested_rewrite"],
                 "time": exec_time,
-                "post": ds_eval_method(edited_model, tok, record, snips, vec), # TODO: edit record
+                "post": ds_eval_method(edited_model, tok, record, snips, vec), 
             }
 
             with torch.no_grad():
                 for k, v in weights_copy.items():
                     nethook.get_parameter(model, k)[...] = v.to("cuda")
-            metrics["pre"] = ds_eval_method(model, tok, record, snips, vec) # edit record
+            metrics["pre"] = ds_eval_method(model, tok, record, snips, vec) 
 
             print("Evaluation took", time() - start)
 
             # Dump metrics in .json
             with open(case_result_path, "w") as f:
                 json.dump(metrics, f, indent=1)
-
 
 if __name__ == "__main__":
     import argparse

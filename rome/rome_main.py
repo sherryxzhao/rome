@@ -21,6 +21,7 @@ def apply_rome_to_model(
     hparams: ROMEHyperParams,
     copy=False,
     return_orig_weights=False,
+    is_edit_max = True,
 ) -> Tuple[AutoModelForCausalLM, List[str]]:
     """
     Returns a model with the desired changes.
@@ -37,7 +38,7 @@ def apply_rome_to_model(
     weights_copy = {}
 
     for i, request in enumerate(requests):
-        deltas = execute_rome(model, tok, request, hparams)
+        deltas = execute_rome(model, tok, request, hparams, is_edit_max)
 
         with torch.no_grad():
             for w_name, (delta_u, delta_v) in deltas.items():
@@ -61,6 +62,7 @@ def execute_rome(
     tok: AutoTokenizer,
     request: Dict,
     hparams: ROMEHyperParams,
+    is_edit_max = True,
 ) -> Dict[str, Tuple[torch.Tensor]]:
     """
     Executes the ROME update algorithm for the specified update at the specified layer
@@ -78,11 +80,13 @@ def execute_rome(
         f"[{request['prompt'].format(request['subject'])}] -> [{request['target_new']['str']}]"
     )
 
-    if 'max_score_layer' in request:
+    if 'max_edit_layer' in request and is_edit_max:
         # only edit at max-score-layer
-        layers = request['max_score_layer']
+        layers = [request['max_edit_layer']]
+        print("Edit the max layer: ", layers)
     else:
         layers = hparams.layers
+        print("Edit layers from hparams: ", layers)
 
     
     # Retrieve weights that user desires to change
