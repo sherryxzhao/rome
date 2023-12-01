@@ -1,1 +1,9 @@
 Below is time log for run starts at 2023-12-01 00:58:35.806790
+Loading functions finished. 21.412407159805298s.
+Parsing inputs finished. 0.0005686283111572266s.
+Model and tokenizer initialization finished. 64.25419664382935s.
+Loading dataset finished. 4.170837879180908s.
+Time used for processing case1 to case101: 36.78473734855652s
+
+Average time for one case: 0.3606346752129349s
+
