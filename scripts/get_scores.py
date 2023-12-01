@@ -10,7 +10,23 @@ from collections import defaultdict
 from util import nethook
 from util.globals import DATA_DIR
 
-ftime = open('./visualization/runtime.txt', "a+")
+ds_name = "ZSREeval"
+start, num = 0, 0
+# Check if any arguments were passed (excluding the script name itself)
+l = len(sys.argv)
+if l > 1:
+    ds_name = sys.argv[1]
+    print(f"You have specified dataset name: {ds_name}")
+    if l > 2:
+        start = int(sys.argv[2])
+        print(f"You have specified start entry: {start}")
+    if l > 3:
+        num = int(sys.argv[3])
+        print(f"You have specified number of entries to compute: {num}")
+else:
+    print("No arguments were passed.")
+
+ftime = open(f'./visualization/runtime-{ds_name}-{start}.txt', "a+")
 now = datetime.now()
 ftime.write(f"Below is time log for run starts at {now}\n")
 ftime.flush()
@@ -42,28 +58,6 @@ ftime.write(f"{log}\n")
 ftime.flush()
 print(log)
 
-ds_name = "ZSREeval"
-start, num = 0, 0
-# Check if any arguments were passed (excluding the script name itself)
-l = len(sys.argv)
-if l > 1:
-    ds_name = sys.argv[1]
-    print(f"You have specified dataset name: {ds_name}")
-    if l > 2:
-        start = int(sys.argv[2])
-        print(f"You have specified start entry: {start}")
-    if l > 3:
-        num = int(sys.argv[3])
-        print(f"You have specified number of entries to compute: {num}")
-else:
-    print("No arguments were passed.")
-
-t2 = time.time()
-log = f"Parsing inputs finished. {t2-t1}s."
-ftime.write(f"{log}\n")
-ftime.flush()
-print(log)
-
 torch.set_grad_enabled(False)
 
 IS_COLAB = False
@@ -82,7 +76,7 @@ mt = ModelAndTokenizer(
 # )
 
 t3 = time.time()
-log = f"Model and tokenizer initialization finished. {t3-t2}s."
+log = f"Model and tokenizer initialization finished. {t3-t1}s."
 ftime.write(f"{log}\n")
 ftime.flush()
 print(log)
@@ -108,8 +102,8 @@ def get_scores(ds_name="ZSREeval", start=0, num=0):
     noise_level = 0.13347487896680832
     print(f"Using precomputed noise level: {noise_level}")
 
-    f = open('./visualization/' + ds_name + '_return_mlp.json', "a+")
-    flog = open("./visualization/" + ds_name + "_log.txt", "a+")
+    f = open(f'./visualization/{ds_name}-{start}.json', "a+")
+    flog = open(f'./visualization/{ds_name}-{start}-log.txt', "a+")
     # print the total length of the dataset
     print(f"There are {len(ds)} entries in the dataset")
 
