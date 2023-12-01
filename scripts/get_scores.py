@@ -157,6 +157,8 @@ def get_scores(ds_name="ZSREeval", start=0, num=0):
                 ftime.flush()
                 t = _t
 
+    f.flush()
+    flog.flush()
     f.close()
     flog.close()
 
