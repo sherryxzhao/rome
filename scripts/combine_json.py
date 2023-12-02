@@ -11,12 +11,20 @@ def add_to_array(file_path):
     print("Start processing " + str(file_path))
     with open(file_path, "r") as f:
         for line in f:
-            print(line)
             json_obj = json.loads(line)
             if json_obj["case_id"] not in indices:
                 ds_object.append(json_obj)
                 indices.add(json_obj["case_id"])
     print("Done processing " + str(file_path))
+
+def process_invalid_json(file_path):
+    print("Start processing invalid json " + str(file_path))
+    with open(file_path, "r") as file:
+        content = file.read()
+        content = content.replace('}{', '}\n{')
+    with open(file_path, "w+") as file:
+        file.write(content)
+
 
 def dump_json(file_path):
     sorted_ds_object = sorted(ds_object, key=lambda x: x['case_id'])
@@ -39,8 +47,12 @@ def remaining(file_path):
 # iterate over files
 for filename in os.scandir(directory):
     if filename.is_file() and filename.name.endswith('.json'):
-        add_to_array(filename)
-
+        try:
+            add_to_array(filename)
+        except:
+            print("Invalid json file, try process it before loading objects")
+            process_invalid_json(filename)
+            add_to_array(filename)
 #%%
 dump_json('./dsets/zsre_comb.json')
 #%%
