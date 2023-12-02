@@ -9,6 +9,7 @@ from tqdm import tqdm
 from collections import defaultdict
 from util import nethook
 from util.globals import DATA_DIR
+import csv
 
 ds_name = "ZSREeval"
 start, num = 0, 0
@@ -23,10 +24,16 @@ if l > 1:
     if l > 3:
         num = int(sys.argv[3])
         print(f"You have specified number of entries to compute: {num}")
+    if l > 4:
+        user = int(sys.argv[4])
+        print(f"You have specified user id: {user}") # sherry: 0 jianqi: 1 ryan: 2
+    if l > 5:
+        batch_idx = int(sys.argv[5])
+        print(f"You have specified the batch idx: {batch_idx}") # 10 batch in total
 else:
     print("No arguments were passed.")
 
-ftime = open(f'./visualization/runtime-{ds_name}-{start}.txt', "a+")
+ftime = open(f'./visualization/runtime-{ds_name}-{user}-{batch_idx}.txt', "a+")
 now = datetime.now()
 ftime.write(f"Below is time log for run starts at {now}\n")
 ftime.flush()
@@ -81,6 +88,42 @@ ftime.write(f"{log}\n")
 ftime.flush()
 print(log)
 
+def read_csv_to_list(file_path):
+    with open(file_path, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        numbers_list = []
+        for row in reader:
+            for cell in row:
+                if cell:  # This checks if the cell is not empty
+                    numbers_list.append(int(cell))  # Convert the cell to an integer
+    return numbers_list
+
+def divide_and_extract(lst, N, i):
+    """
+    Divides a list into N parts and returns the i-th part (0-indexed).
+    
+    Args:
+    lst: The list to divide.
+    N: The number of parts to divide the list into.
+    i: The index of the part to return (0-indexed).
+
+    Returns:
+    A sublist representing the i-th part of the original list.
+    """
+
+    # Calculate the size of each part
+    part_size = len(lst) // N
+
+    # Calculate the start and end indices of the i-th part
+    start_index = i * part_size
+    end_index = start_index + part_size
+
+    # Adjust the end index for the last part, if there are remaining elements
+    if i == N - 1:
+        end_index = len(lst)
+
+    return lst[start_index:end_index]
+
 # %%
 def get_scores(ds_name="ZSREeval", start=0, num=0):
     if ds_name == "counterfact":
@@ -102,8 +145,8 @@ def get_scores(ds_name="ZSREeval", start=0, num=0):
     noise_level = 0.13347487896680832
     print(f"Using precomputed noise level: {noise_level}")
 
-    f = open(f'./visualization/{ds_name}-{start}.json', "a+")
-    flog = open(f'./visualization/{ds_name}-{start}-log.txt', "a+")
+    f = open(f'./visualization/{ds_name}-{user}-{batch_idx}.json', "a+")
+    flog = open(f'./visualization/{ds_name}-{user}-{batch_idx}-log.txt', "a+")
     # print the total length of the dataset
     print(f"There are {len(ds)} entries in the dataset")
 
@@ -115,7 +158,10 @@ def get_scores(ds_name="ZSREeval", start=0, num=0):
 
     log_freq = 50
 
-    index_list = [] # read in the index list
+    # read in the index list
+    index_list = read_csv_to_list("zsre_idx.txt")
+    index_list = divide_and_extract(index_list, 3, user)
+    index_list = divide_and_extract(index_list, 10, batch_idx)
 
     # for dp in tqdm(ds[start:start+num]):
     for i in tqdm(index_list):
