@@ -162,3 +162,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Visualization folder data files
+visualization/*.log
+visualization/*.json

@@ -113,10 +113,14 @@ def get_scores(ds_name="ZSREeval", start=0, num=0):
     print("tracing starts now.")
     t, _t, t5 = time.time(), time.time(), time.time()
 
-    log_freq = 100
+    log_freq = 50
 
-    for dp in tqdm(ds[start:start+num]):
+    index_list = [] # read in the index list
+
+    # for dp in tqdm(ds[start:start+num]):
+    for i in tqdm(index_list):
         try:
+            dp = ds[i]
             subject = dp["requested_rewrite"]["subject"]
             prompt = dp["requested_rewrite"]["prompt"].replace("{}", subject)
             kind = 'mlp'
