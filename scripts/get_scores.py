@@ -163,6 +163,8 @@ def get_scores(ds_name="ZSREeval", start=0, num=0):
     index_list = divide_and_extract(index_list, 3, user)
     index_list = divide_and_extract(index_list, 10, batch_idx)
 
+    cnt = 0 # case counter
+
     # for dp in tqdm(ds[start:start+num]):
     for i in tqdm(index_list):
         try:
@@ -180,6 +182,7 @@ def get_scores(ds_name="ZSREeval", start=0, num=0):
             dp["requested_rewrite"]['max_edit_layer'] = int(numpy.argmax(scores[result['subject_range'][1] - 1]))
             # join two dictionary and add to json file
             json_str = json.dumps(dp)
+            cnt += 1
             f.write(json_str+'\n')
             f.flush()
 
@@ -193,16 +196,16 @@ def get_scores(ds_name="ZSREeval", start=0, num=0):
 
         finally:
             case_id = dp["case_id"]
-            if case_id == start: continue
-            if (case_id - start) % log_freq == 0:
+            # if case_id == start: continue
+            if cnt % log_freq == 0:
                 log = "Done Processing case_id " +  str(case_id)
                 print(log)
                 flog.write(f"{log}\n")
                 flog.flush()
                 _t = time.time()
-                log = f"Time used for processing case{case_id-log_freq} to case{case_id}: {_t-t}s\n"
+                log = f"Time used for processing {log_freq} cases: {_t-t}s\n"
                 ftime.write(f"{log}\n")
-                log = f"Average time for one case: {(_t-t5)/(case_id+1)}s\n"
+                log = f"Average time for one case: {(_t-t5)/(log_freq)}s\n"
                 ftime.write(f"{log}\n")
                 ftime.flush()
                 t = _t
