@@ -32,4 +32,4 @@ def preprocess_max_layer(input_file_name='counterfact_return_mlp.json', output_f
         json.dump(processed_data, output_file, indent=2)
 
 if __name__ == "__main__":
-    preprocess_max_layer()
+    preprocess_max_layer('zsre_comb.json', 'zsre_comb_max_layer_requests.json')
