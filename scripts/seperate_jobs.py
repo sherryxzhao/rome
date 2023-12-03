@@ -4,7 +4,7 @@ def generate_sbatch_content(job_name, email, path, start, end, data_file_path, r
     sbatch_content = \
 f"""#!/bin/bash
 #SBATCH -J {job_name} #job name 
-#SBATCH -N1 --gres=gpu:V100:1
+#SBATCH -N1 --gres=gpu:1 -C V100-32GB
 #SBATCH -t 480 # Duration of the job (in minutes) max 8hrs
 #SBATCH --mem-per-cpu=24G
 #SBATCH -q coc-ice #Queue name (where job is submitted)
@@ -62,11 +62,6 @@ def create_tasks_for_user(user_id):
         with open(f'{sbatch_tasks_folder}/{job_name_max_edit}.sbatch', 'w') as file:
             file.write(res[0])
         idx += 1
-
-    # # Check if the folder exists, if not, create it
-    # if not os.path.exists(folder_name):
-    #     os.makedirs(folder_name)
-    # sbatch_content = \
 
 if __name__ == '__main__':
     user_id = int(sys.argv[1])
