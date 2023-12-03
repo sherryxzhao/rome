@@ -86,7 +86,7 @@ def main(
     # Get run hyperparameters
     params_path = (
         run_dir / "params.json"
-        if continue_from_run is not None
+        if continue_from_run is not None and (run_dir / "params.json").exists() 
         else HPARAMS_DIR / alg_name / hparams_fname
     )
     hparams = params_class.from_json(params_path)
