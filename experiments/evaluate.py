@@ -125,6 +125,8 @@ def main(
 
     # Iterate through dataset
     for record in tqdm(ds_partition, desc="Processing records"):
+        case_id = record["case_id"]
+        print("Evaluating case", case_id)
         case_result_path = run_dir / f"case_{case_id}.json"
         if not case_result_path.exists():
             # Compute weight changes + record weights that changed
