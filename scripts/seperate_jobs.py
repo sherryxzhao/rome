@@ -14,7 +14,7 @@ f"""#!/bin/bash
 cd {path}
 module load anaconda3/2022.05.0.1
 conda activate rome
-python3 -m scripts.get_scores --alg_name=ROME --model_name=gpt2-xl --hparams_fname=gpt2-xl.json --data_file_name={data_file_path} --start={start} --end={end} --continue_from_run {run_dir_name}
+python3 -m experiments.evaluate --alg_name=ROME --model_name=gpt2-xl --hparams_fname=gpt2-xl.json --data_file_name={data_file_path} --start={start} --end={end} --continue_from_run {run_dir_name}
 """
     return sbatch_content
 
