@@ -55,15 +55,19 @@ def main(
     skip_generation_tests: bool,
     conserve_memory: bool,
     dir_name: str,
+    file_path='data/counterfact_max_layer_requests.json',
+    start=None,
+    end=None,
 ):
     # Set algorithm-specific variables
     params_class, apply_algo = ALG_DICT[alg_name]
     # Determine run directory
     if continue_from_run is not None:
         run_dir = RESULTS_DIR / dir_name / continue_from_run
-        assert (
-            run_dir.exists()
-        ), f"If continuing from run, {continue_from_run} must exist!"
+        run_dir.mkdir(parents=True, exist_ok=True)
+        # assert (
+        #     run_dir.exists()
+        # ), f"If continuing from run, {continue_from_run} must exist!"
     else:
         alg_dir = RESULTS_DIR / dir_name
         if alg_dir.exists():
@@ -82,7 +86,7 @@ def main(
     # Get run hyperparameters
     params_path = (
         run_dir / "params.json"
-        if continue_from_run is not None
+        if continue_from_run is not None and (run_dir / "params.json").exists() 
         else HPARAMS_DIR / alg_name / hparams_fname
     )
     hparams = params_class.from_json(params_path)
@@ -108,20 +112,21 @@ def main(
     # ds = ds_class(DATA_DIR, size=dataset_size_limit, tok=tok)
 
     # TODO: this is the place to change the data path
-    file_path = 'data/counterfact_max_layer_requests.json'
     with open(file_path, 'r') as file:
         ds = json.load(file)
-    
 
-    idx = 1 
+
+    if start is not None and end is not None:
+        print("--------------Evaluating from line", str(start), "to", str(end), "----------------")
+        ds_partition = ds[start:end] 
+    else:
+        print("--------------Evaluating the entire file----------------")
+        ds_partition = ds
+
     # Iterate through dataset
-    for record in tqdm(ds, desc="Processing records"):
-        if 'case_id' not in record:
-            case_id = idx
-        else:
-            case_id = record["case_id"]
-        idx += 1
-        
+    for record in tqdm(ds_partition, desc="Processing records"):
+        case_id = record["case_id"]
+        print("Evaluating case", case_id)
         case_result_path = run_dir / f"case_{case_id}.json"
         if not case_result_path.exists():
             # Compute weight changes + record weights that changed
@@ -212,6 +217,24 @@ if __name__ == "__main__":
         help="If continuing from previous run, set to run_id. Otherwise, leave as None.",
     )
     parser.add_argument(
+        "--data_file_name",
+        type=str,
+        default=None,
+        help="Data file name like zsre_comb.json.",
+    )
+    parser.add_argument(
+        "--start",
+        type=int,
+        default=None,
+        help="Start evaluation from the line.",
+    )
+    parser.add_argument(
+        "--end",
+        type=int,
+        default=None,
+        help="End evaluation from the line (exclusive).",
+    )
+    parser.add_argument(
         "--dataset_size_limit",
         type=int,
         default=10000,
@@ -245,4 +268,7 @@ if __name__ == "__main__":
         args.skip_generation_tests,
         args.conserve_memory,
         dir_name=args.alg_name,
+        file_path=args.data_file_name,
+        start=args.start,
+        end=args.end
     )
